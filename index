@@ -2,6 +2,897 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <title>Задачник</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #94a3b8;
+      --input-bg: #f8fafc;
+      --border: #e2e8f0;
+      --item-bg: #f8fafc;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --danger: #ef4444;
+      --danger-bg: #fee2e2;
+      --shadow: rgba(0, 0, 0, 0.08);
+      --filter-bg: #f1f5f9;
+      --filter-text: #64748b;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --input-bg: #0f172a;
+      --border: #334155;
+      --item-bg: #0f172a;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --danger: #f87171;
+      --danger-bg: #7f1d1d;
+      --shadow: rgba(0, 0, 0, 0.4);
+      --filter-bg: #334155;
+      --filter-text: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 12px;
+      transition: background 0.3s;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card);
+      border-radius: 24px;
+      box-shadow: 0 8px 24px var(--shadow);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      height: fit-content;
+      max-height: 96vh;
+      transition: background 0.3s;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .theme-toggle {
+      background: var(--filter-bg);
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.92);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s, background 0.3s;
+      background: var(--input-bg);
+      color: var(--text);
+      min-width: 0;
+    }
+
+    .input-row input:focus {
+      border-color: var(--primary);
+      background: var(--card);
+    }
+
+    .input-row input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-row button {
+      width: 56px;
+      height: 56px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 28px;
+      border-radius: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .input-row button:active {
+      transform: scale(0.94);
+      background: var(--primary-hover);
+    }
+
+    .reminder-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding: 0 4px;
+    }
+
+    .reminder-row label {
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .reminder-row input[type="datetime-local"] {
+      flex: 1;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+      min-width: 0;
+      transition: border-color 0.2s;
+    }
+
+    .reminder-row input[type="datetime-local"]:focus {
+      border-color: var(--primary);
+    }
+
+    .reminder-row input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: var(--picker-filter, none);
+      cursor: pointer;
+    }
+
+    [data-theme="dark"] .reminder-row input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+
+    .filters {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .filters button {
+      flex: 1;
+      padding: 8px 0;
+      border: none;
+      background: var(--filter-bg);
+      color: var(--filter-text);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filters button.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .task-list {
+      list-style: none;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+      min-height: 80px;
+    }
+
+    .task-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .task-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 10px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 12px;
+      background: var(--item-bg);
+      border-radius: 14px;
+      transition: background 0.2s;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-item.done {
+      opacity: 0.55;
+    }
+
+    .task-item.done .task-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .checkbox {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      background: var(--card);
+      margin-top: 1px;
+    }
+
+    .checkbox.checked {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .checkbox.checked::after {
+      content: '✓';
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .task-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .task-text {
+      font-size: 16px;
+      color: var(--text);
+      word-break: break-word;
+      line-height: 1.3;
+    }
+
+    .task-reminder {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--filter-bg);
+      padding: 3px 8px;
+      border-radius: 8px;
+      width: fit-content;
+      transition: all 0.2s;
+    }
+
+    .task-reminder.overdue {
+      color: var(--danger);
+      background: var(--danger-bg);
+      font-weight: 600;
+    }
+
+    .task-reminder.future {
+      color: var(--primary);
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 8px;
+      transition: color 0.2s, background 0.2s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .delete-btn:active {
+      color: var(--danger);
+      background: var(--danger-bg);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-muted);
+      font-size: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      list-style: none;
+    }
+
+    .empty-state span {
+      font-size: 40px;
+    }
+
+    .counter {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--card);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px var(--shadow);
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      pointer-events: none;
+      z-index: 1000;
+      border: 1px solid var(--border);
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .notif-banner {
+      background: var(--filter-bg);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+    }
+
+    .notif-banner button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 380px) {
+      .app { padding: 14px 10px; }
+      h1 { font-size: 22px; }
+      .input-row input { padding: 12px; font-size: 15px; }
+      .input-row button { width: 50px; height: 50px; font-size: 24px; }
+      .task-text { font-size: 15px; }
+      .reminder-row label { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1>📋 Задачник</h1>
+      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">🌙</button>
+    </div>
+
+    <div id="notifBanner"></div>
+
+    <div class="input-row">
+      <input type="text" id="taskInput" placeholder="Новая задача..." maxlength="120" autocomplete="off">
+      <button id="addBtn" aria-label="Добавить">+</button>
+    </div>
+
+    <div class="reminder-row">
+      <label for="reminderInput">⏰ Напомнить:</label>
+      <input type="datetime-local" id="reminderInput">
+    </div>
+
+    <div class="filters" id="filters">
+      <button data-filter="all" class="active">Все</button>
+      <button data-filter="active">Активные</button>
+      <button data-filter="done">Выполненные</button>
+    </div>
+
+    <ul class="task-list" id="taskList"></ul>
+
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function() {
+      // ==================== Состояние ====================
+      let tasks = [];
+      let currentFilter = 'all';
+      let reminderTimers = {};       // id -> setTimeout
+      let notifiedTasks = new Set(); // чтобы не спамить
+
+      // ==================== DOM ====================
+      const taskInput = document.getElementById('taskInput');
+      const reminderInput = document.getElementById('reminderInput');
+      const addBtn = document.getElementById('addBtn');
+      const taskList = document.getElementById('taskList');
+      const filters = document.getElementById('filters');
+      const counter = document.getElementById('counter');
+      const themeToggle = document.getElementById('themeToggle');
+      const toast = document.getElementById('toast');
+      const notifBanner = document.getElementById('notifBanner');
+
+      // ==================== Тема ====================
+      function initTheme() {
+        const saved = localStorage.getItem('tasks_theme');
+        let theme;
+        if (saved === 'dark' || saved === 'light') {
+          theme = saved;
+        } else {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        applyTheme(theme);
+      }
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#0f172a' : '#f5f7fa');
+      }
+
+      function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        localStorage.setItem('tasks_theme', next);
+      }
+
+      themeToggle.addEventListener('click', toggleTheme);
+
+      // Реакция на смену системной темы (если пользователь не выбрал вручную)
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('tasks_theme')) {
+          applyTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+
+      // ==================== Загрузка/сохранение ====================
+      function loadTasks() {
+        try {
+          const saved = localStorage.getItem('tasks_simple_v2');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) {
+              tasks = parsed.filter(t =>
+                t && typeof t.text === 'string' && t.text.trim() !== ''
+              ).map(t => ({
+                id: t.id || genId(),
+                text: t.text,
+                done: !!t.done,
+                reminder: t.reminder || null
+              }));
+            }
+          }
+        } catch (e) {
+          tasks = [];
+        }
+      }
+
+      function saveTasks() {
+        try {
+          localStorage.setItem('tasks_simple_v2', JSON.stringify(tasks));
+        } catch (e) {}
+      }
+
+      function genId() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      }
+
+      // ==================== Toast ====================
+      let toastTimer;
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+      }
+
+      // ==================== Уведомления ====================
+      function updateNotifBanner() {
+        if (!('Notification' in window)) {
+          notifBanner.innerHTML = '';
+          return;
+        }
+        if (Notification.permission === 'granted') {
+          notifBanner.innerHTML = '';
+          return;
+        }
+        if (Notification.permission === 'denied') {
+          notifBanner.innerHTML = `
+            <div class="notif-banner">
+              <span>🔕 Уведомления заблокированы в настройках браузера</span>
+            </div>`;
+          return;
+        }
+        notifBanner.innerHTML = `
+          <div class="notif-banner">
+            <span>🔔 Разрешить уведомления для напоминаний?</span>
+            <button id="allowNotifBtn">Разрешить</button>
+          </div>`;
+        const btn = document.getElementById('allowNotifBtn');
+        if (btn) {
+          btn.addEventListener('click', requestNotificationPermission);
+        }
+      }
+
+      async function requestNotificationPermission() {
+        if (!('Notification' in window)) {
+          showToast('Уведомления не поддерживаются');
+          return;
+        }
+        try {
+          const perm = await Notification.requestPermission();
+          updateNotifBanner();
+          if (perm === 'granted') {
+            showToast('✅ Уведомления включены');
+          } else if (perm === 'denied') {
+            showToast('❌ Уведомления отключены');
+          }
+        } catch (e) {
+          showToast('Ошибка запроса уведомлений');
+        }
+      }
+
+      function sendNotification(task) {
+        if (!('Notification' in window) || Notification.permission !== 'granted') {
+          // fallback: покажем toast + вибрацию
+          showToast(`⏰ ${task.text}`);
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          return;
+        }
+        try {
+          const n = new Notification('⏰ Напоминание', {
+            body: task.text,
+            tag: task.id,
+            requireInteraction: true,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">📋</text></svg>'
+          });
+          n.onclick = () => {
+            window.focus();
+            n.close();
+          };
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        } catch (e) {
+          showToast(`⏰ ${task.text}`);
+        }
+      }
+
+      // ==================== Таймеры напоминаний ====================
+      function clearAllTimers() {
+        Object.values(reminderTimers).forEach(t => clearTimeout(t));
+        reminderTimers = {};
+      }
+
+      function scheduleReminder(task) {
+        if (!task.reminder || task.done) return;
+
+        const time = new Date(task.reminder).getTime();
+        const now = Date.now();
+        const diff = time - now;
+
+        // Если уже прошло — уведомим сразу (однократно)
+        if (diff <= 0) {
+          if (!notifiedTasks.has(task.id)) {
+            notifiedTasks.add(task.id);
+            setTimeout(() => sendNotification(task), 100);
+          }
+          return;
+        }
+
+        // Ограничение setTimeout (~24.8 дней), разбиваем на цепочки
+        const MAX_DELAY = 2147483647;
+        if (diff > MAX_DELAY) {
+          reminderTimers[task.id] = setTimeout(() => {
+            scheduleReminder(task);
+          }, MAX_DELAY);
+          return;
+        }
+
+        reminderTimers[task.id] = setTimeout(() => {
+          sendNotification(task);
+          notifiedTasks.add(task.id);
+          delete reminderTimers[task.id];
+        }, diff);
+      }
+
+      function rescheduleAllReminders() {
+        clearAllTimers();
+        tasks.forEach(task => {
+          if (task.reminder && !task.done) {
+            scheduleReminder(task);
+          }
+        });
+      }
+
+      // ==================== CRUD ====================
+      function addTask() {
+        const text = taskInput.value.trim();
+        if (!text) {
+          taskInput.focus();
+          return;
+        }
+
+        let reminder = null;
+        if (reminderInput.value) {
+          const d = new Date(reminderInput.value);
+          if (!isNaN(d.getTime())) {
+            reminder = d.toISOString();
+          }
+        }
+
+        const task = {
+          id: genId(),
+          text: text,
+          done: false,
+          reminder: reminder
+        };
+
+        tasks.unshift(task);
+        taskInput.value = '';
+        reminderInput.value = '';
+        saveTasks();
+        render();
+
+        if (reminder) {
+          scheduleReminder(task);
+          showToast('⏰ Напоминание установлено');
+        }
+      }
+
+      function toggleTask(id) {
+        const task = tasks.find(t => t.id === id);
+        if (!task) return;
+        task.done = !task.done;
+        saveTasks();
+        render();
+
+        // Пересчёт таймеров для этой задачи
+        if (reminderTimers[id]) {
+          clearTimeout(reminderTimers[id]);
+          delete reminderTimers[id];
+        }
+        if (!task.done && task.reminder) {
+          scheduleReminder(task);
+        }
+      }
+
+      function deleteTask(id) {
+        if (reminderTimers[id]) {
+          clearTimeout(reminderTimers[id]);
+          delete reminderTimers[id];
+        }
+        notifiedTasks.delete(id);
+        tasks = tasks.filter(t => t.id !== id);
+        saveTasks();
+        render();
+      }
+
+      // ==================== Утилиты ====================
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      function formatReminder(iso) {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return '';
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const diffDays = Math.round((target - today) / 86400000);
+
+        const time = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+        if (diffDays === 0) return `Сегодня, ${time}`;
+        if (diffDays === 1) return `Завтра, ${time}`;
+        if (diffDays === -1) return `Вчера, ${time}`;
+        if (diffDays > 1 && diffDays < 7) {
+          const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+          return `${days[d.getDay()]}, ${time}`;
+        }
+        return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) + ', ' + time;
+      }
+
+      // ==================== Отрисовка ====================
+      function render() {
+        // Фильтр
+        let filtered = tasks;
+        if (currentFilter === 'active') filtered = tasks.filter(t => !t.done);
+        else if (currentFilter === 'done') filtered = tasks.filter(t => t.done);
+
+        // Список
+        if (filtered.length === 0) {
+          const emptyMessages = {
+            all: { emoji: '📭', text: 'Нет задач. Добавьте первую!' },
+            active: { emoji: '✅', text: 'Нет активных задач.' },
+            done: { emoji: '📌', text: 'Нет выполненных задач.' }
+          };
+          const msg = emptyMessages[currentFilter] || emptyMessages.all;
+          taskList.innerHTML = `
+            <li class="empty-state">
+              <span>${msg.emoji}</span>
+              ${msg.text}
+            </li>`;
+        } else {
+          const now = Date.now();
+          taskList.innerHTML = filtered.map(task => {
+            let reminderHtml = '';
+            if (task.reminder) {
+              const time = new Date(task.reminder).getTime();
+              const isOverdue = !task.done && time < now;
+              const isFuture = !task.done && time >= now;
+              const cls = isOverdue ? 'overdue' : (isFuture ? 'future' : '');
+              const icon = isOverdue ? '⚠️' : '⏰';
+              reminderHtml = `<span class="task-reminder ${cls}">${icon} ${escapeHtml(formatReminder(task.reminder))}</span>`;
+            }
+            return `
+              <li class="task-item ${task.done ? 'done' : ''}" data-id="${task.id}">
+                <div class="checkbox ${task.done ? 'checked' : ''}" data-action="toggle"></div>
+                <div class="task-content">
+                  <span class="task-text">${escapeHtml(task.text)}</span>
+                  ${reminderHtml}
+                </div>
+                <button class="delete-btn" data-action="delete" aria-label="Удалить">✕</button>
+              </li>`;
+          }).join('');
+        }
+
+        // Счётчик
+        const total = tasks.length;
+        const doneCount = tasks.filter(t => t.done).length;
+        const withReminders = tasks.filter(t => t.reminder && !t.done).length;
+        if (total === 0) {
+          counter.textContent = 'Нет задач';
+        } else {
+          let txt = `Всего: ${total} · Выполнено: ${doneCount} · Осталось: ${total - doneCount}`;
+          if (withReminders > 0) txt += ` · ⏰ ${withReminders}`;
+          counter.textContent = txt;
+        }
+      }
+
+      // ==================== События ====================
+      taskList.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+        const action = target.dataset.action;
+        const taskItem = target.closest('.task-item');
+        if (!taskItem) return;
+        const id = taskItem.dataset.id;
+        if (!id) return;
+
+        if (action === 'toggle') toggleTask(id);
+        else if (action === 'delete') deleteTask(id);
+      });
+
+      filters.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-filter]');
+        if (!btn) return;
+        currentFilter = btn.dataset.filter;
+        filters.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+      });
+
+      addBtn.addEventListener('click', addTask);
+
+      taskInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addTask();
+        }
+      });
+
+      // ==================== Инициализация ====================
+      initTheme();
+      loadTasks();
+      render();
+      updateNotifBanner();
+      rescheduleAllReminders();
+
+      // При возврате на страницу — перепроверить «просроченные» напоминания
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          render();
+          // Проверим просроченные
+          tasks.forEach(task => {
+            if (task.reminder && !task.done && !notifiedTasks.has(task.id)) {
+              const time = new Date(task.reminder).getTime();
+              if (time <= Date.now() && time > Date.now() - 60000 * 5) {
+                // если напоминание прошло в последние 5 минут — покажем
+                sendNotification(task);
+                notifiedTasks.add(task.id);
+              }
+            }
+          });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
